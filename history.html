@@ -1,0 +1,60 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>DeepDiet - History</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="container">
+    <div class="nav">
+      <div class="brand"><div class="brand-badge">D</div>DeepDiet</div>
+
+      <div class="nav-right">
+        <a href="index.html" data-i18n="scan">Scan</a>
+        <a class="active" href="history.html" data-i18n="history">History</a>
+        <a href="dashboard.html" data-i18n="dashboard">Dashboard</a>
+
+        <select id="langSelect">
+          <option value="en">English</option>
+          <option value="hi">Hindi</option>
+          <option value="te">Telugu</option>
+        </select>
+
+        <span class="badge">User: <span id="userInfo">--</span></span>
+        <button class="btn secondary" id="logoutBtn" type="button" data-i18n="logout">Logout</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <h1 class="h1">Scan History</h1>
+      <div style="display:flex;gap:10px;flex-wrap:wrap;margin:12px 0;">
+  <input id="searchInput" class="input" placeholder="Search meal name...">
+  <select id="filterScore">
+    <option value="all">All Scores</option>
+    <option value="80">80+ Excellent</option>
+    <option value="60">60+ Good</option>
+    <option value="40">40+ Average</option>
+  </select>
+</div>
+
+      <table class="table">
+        <thead>
+          <tr>
+            <th>Date</th><th>Meal</th><th>Calories</th><th>Score</th>
+          </tr>
+        </thead>
+        <tbody id="historyTable"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <div id="toastBox" style="position:fixed; bottom:18px; right:18px; z-index:9999; display:flex; flex-direction:column; gap:10px; max-width:320px;"></div>
+
+  <script src="toast.js"></script>
+  <script src="auth.js"></script>
+  <script src="i18n.js"></script>
+  <script src="history.js"></script>
+</body>
+</html>

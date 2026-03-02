@@ -1,0 +1,205 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>DeepDiet - Result</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <div class="container">
+
+    <!-- NAVBAR -->
+    <div class="nav">
+      <div class="brand">
+        <div class="brand-badge">D</div>DeepDiet
+      </div>
+
+      <div class="nav-right">
+        <a href="index.html" data-i18n="scan">Scan</a>
+        <a href="history.html" data-i18n="history">History</a>
+        <a href="dashboard.html" data-i18n="dashboard">Dashboard</a>
+        <a href="weekly.html">Weekly</a>
+        <a href="profile.html">Profile</a>
+
+        <select id="langSelect">
+          <option value="en">English</option>
+          <option value="hi">Hindi</option>
+          <option value="te">Telugu</option>
+        </select>
+
+        <span class="badge">
+          User: <span id="userInfo">--</span>
+        </span>
+
+        <button class="btn secondary" id="logoutBtn" type="button" data-i18n="logout">
+          Logout
+        </button>
+      </div>
+    </div>
+
+    <!-- RESULT CARD -->
+    <div class="card">
+
+      <h1 class="h1">Scan Result</h1>
+      <p class="p">Nutrition summary for your meal</p>
+
+      <!-- KPI -->
+      <div class="kpi">
+        <div class="box">
+          <div class="val" id="calories">--</div>
+          <div class="lbl">Calories</div>
+        </div>
+        <div class="box">
+          <div class="val" id="protein">--</div>
+          <div class="lbl">Protein (g)</div>
+        </div>
+        <div class="box">
+          <div class="val" id="carbs">--</div>
+          <div class="lbl">Carbs (g)</div>
+        </div>
+        <div class="box">
+          <div class="val" id="fat">--</div>
+          <div class="lbl">Fat (g)</div>
+        </div>
+      </div>
+
+      <!-- DISH PANEL -->
+      <div id="dishPanel" class="card" style="margin-top:16px;display:none;">
+        <h3 style="margin:0 0 10px;">Dish-level Nutrition (Restaurant Mode)</h3>
+        <p class="p">Estimated portion size from image. Adjust if needed.</p>
+
+        <div style="display:flex;gap:12px;flex-wrap:wrap;margin-top:10px;">
+          <span class="badge" id="dishNameBadge">Dish: --</span>
+          <span class="badge" id="portionBadge">Portion: --</span>
+          <span class="badge" id="gramsBadge">Estimated: -- g</span>
+          <span class="badge" id="confidenceBadge">Confidence: --</span>
+        </div>
+
+        <div style="margin-top:12px;">
+          <label class="p"><b>Adjust Portion</b></label>
+          <input id="portionSlider"
+                 type="range"
+                 min="0.5"
+                 max="2"
+                 step="0.1"
+                 value="1"
+                 style="width:100%;">
+          <div class="p" id="sliderText">Multiplier: 1x</div>
+        </div>
+
+        <p class="p" id="dishNotes" style="margin-top:10px;"></p>
+      </div>
+
+      <!-- ITEMS TABLE -->
+      <h3 style="margin-top:18px">Detected Items</h3>
+
+      <table class="table">
+        <thead>
+          <tr>
+            <th>Food</th>
+            <th>Portion</th>
+            <th>Calories</th>
+          </tr>
+        </thead>
+        <tbody id="itemsTable"></tbody>
+      </table>
+
+      <!-- ACTION BUTTONS -->
+      <div style="margin-top:18px;display:flex;gap:12px;flex-wrap:wrap">
+        <button class="btn" onclick="window.location.href='history.html'">
+          View History
+        </button>
+        <button class="btn secondary" id="downloadBtn" type="button">
+          Download PDF
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+
+  <!-- ================= CHATBOT UI ================= -->
+
+  <!-- Floating Button -->
+  <div id="chatbotToggle"
+       style="
+        position:fixed;
+        bottom:20px;
+        right:20px;
+        width:60px;
+        height:60px;
+        border-radius:50%;
+        background:linear-gradient(135deg,#7c3aed,#3b82f6);
+        display:flex;
+        align-items:center;
+        justify-content:center;
+        font-size:22px;
+        cursor:pointer;
+        z-index:9999;">
+        🤖
+  </div>
+
+  <!-- Chat Window -->
+  <div id="chatbotBox"
+       style="
+        position:fixed;
+        bottom:90px;
+        right:20px;
+        width:320px;
+        height:420px;
+        background:rgba(255,255,255,0.10);
+        backdrop-filter:blur(18px);
+        border:1px solid rgba(255,255,255,0.18);
+        border-radius:20px;
+        display:none;
+        flex-direction:column;
+        overflow:hidden;
+        z-index:9999;">
+
+      <div style="padding:12px;font-weight:900;background:rgba(0,0,0,0.2);">
+        DeepDiet AI Assistant
+      </div>
+
+      <div id="chatMessages"
+           style="flex:1;padding:10px;overflow-y:auto;font-size:14px;">
+      </div>
+
+      <div style="display:flex;padding:10px;gap:6px;">
+        <input id="chatInput"
+               class="input"
+               placeholder="Ask about this meal..."
+               style="flex:1;">
+        <button id="chatSend" class="btn" type="button">
+          Send
+        </button>
+      </div>
+
+  </div>
+
+  <!-- ============================================== -->
+
+
+  <!-- TOAST -->
+  <div id="toastBox"
+       style="position:fixed;
+              bottom:18px;
+              right:18px;
+              z-index:9999;
+              display:flex;
+              flex-direction:column;
+              gap:10px;
+              max-width:320px;">
+  </div>
+
+
+  <!-- SCRIPTS -->
+  <script src="toast.js"></script>
+  <script src="auth.js"></script>
+  <script src="i18n.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="result.js"></script>
+
+</body>
+</html>

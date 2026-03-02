@@ -1,0 +1,139 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>DeepDiet - Dashboard</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+  <div class="container">
+    <div class="nav">
+      <div class="brand">
+        <div class="brand-badge">D</div>DeepDiet
+      </div>
+
+      <div class="nav-right">
+        <a href="index.html" data-i18n="scan">Scan</a>
+        <a href="history.html" data-i18n="history">History</a>
+        <a class="active" href="dashboard.html" data-i18n="dashboard">Dashboard</a>
+        <a href="weekly.html">Weekly</a>
+        <a href="profile.html">Profile</a>
+
+        <select id="langSelect">
+          <option value="en">English</option>
+          <option value="hi">Hindi</option>
+          <option value="te">Telugu</option>
+        </select>
+
+        <span class="badge">User: <span id="userInfo">--</span></span>
+        <button class="btn secondary" id="logoutBtn" type="button" data-i18n="logout">Logout</button>
+      </div>
+    </div>
+
+    <!-- ================= DAILY GOAL ================= -->
+    <div class="grid grid-2">
+      <div class="card">
+        <h1 class="h1">Daily Goal Progress</h1>
+        <p class="p">Track today’s calorie intake and hydration.</p>
+
+        <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:12px;">
+          <span class="badge" id="goalBadge">Goal: -- kcal</span>
+          <span class="badge" id="todayBadge">Today: -- kcal</span>
+          <span class="badge" id="remainBadge">Remaining: -- kcal</span>
+          <span class="badge" id="streakBadge">Streak: -- days</span>
+        </div>
+
+        <!-- Progress bar -->
+        <div style="margin-top:14px;background:rgba(255,255,255,0.10);border:1px solid rgba(255,255,255,0.14);border-radius:999px;height:14px;overflow:hidden;">
+          <div id="progressFill" style="height:100%;width:0%;background:linear-gradient(135deg,#7c3aed,#3b82f6);"></div>
+        </div>
+        <p class="p" id="progressText" style="margin-top:8px;">--%</p>
+
+        <!-- Set Calorie Goal -->
+        <div style="margin-top:14px;display:flex;gap:10px;flex-wrap:wrap;">
+          <input id="goalInput" class="input" type="number" placeholder="Enter daily calorie goal e.g. 2000">
+          <button id="setGoalBtn" class="btn" type="button">Set/Update Goal</button>
+        </div>
+
+        <!-- ================= WATER TRACKER ================= -->
+        <div style="margin-top:28px;border-top:1px solid rgba(255,255,255,0.15);padding-top:18px;">
+          <h2 style="margin:0 0 8px;">Water Intake Tracker 💧</h2>
+          <p class="p">Track daily hydration and enable reminder notifications.</p>
+
+          <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:12px;">
+            <span class="badge" id="waterGoalBadge">Goal: 0 ml</span>
+            <span class="badge" id="waterTodayBadge">Today: 0 ml</span>
+            <span class="badge" id="waterRemainBadge">Remaining: 0 ml</span>
+          </div>
+
+          <div style="margin-top:14px;display:flex;gap:10px;flex-wrap:wrap;">
+            <input id="waterGoalInput" class="input" type="number" placeholder="Set water goal (ml) e.g. 2500">
+            <button id="setWaterGoalBtn" class="btn" type="button">Set Goal</button>
+          </div>
+
+          <div style="margin-top:14px;display:flex;gap:10px;flex-wrap:wrap;">
+            <button id="addWaterBtn" class="btn secondary" type="button">+ 250 ml</button>
+            <button id="resetWaterBtn" class="btn secondary" type="button">Reset Today</button>
+            <button id="enableWaterNotifyBtn" class="btn secondary" type="button">Enable Reminder</button>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- ================= QUICK ACTIONS ================= -->
+      <div class="card">
+        <h1 class="h1">Quick Actions</h1>
+        <p class="p">Jump to your health settings and reports.</p>
+
+        <div style="margin-top:14px;display:flex;gap:10px;flex-wrap:wrap;">
+          <a href="profile.html" class="btn" style="text-decoration:none;">Profile + BMI</a>
+          <a href="weekly.html" class="btn secondary" style="text-decoration:none;">Weekly Report</a>
+          <a href="history.html" class="btn secondary" style="text-decoration:none;">Search History</a>
+        </div>
+
+        <div style="margin-top:14px;">
+          <span class="badge">Tip:</span>
+          <span class="p">Set profile to auto-suggest calories.</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- ================= CHARTS ================= -->
+    <div class="grid grid-2" style="margin-top:18px;">
+      <div class="card">
+        <h1 class="h1">Calories Trend</h1>
+        <p class="p">Calories from your latest scans.</p>
+        <canvas id="calChart"></canvas>
+      </div>
+
+      <div class="card">
+        <h1 class="h1">Meal Quality Trend</h1>
+        <p class="p">Health score trend over time.</p>
+        <canvas id="scoreChart"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast -->
+  <div id="toastBox" style="
+    position:fixed;
+    bottom:18px;
+    right:18px;
+    z-index:9999;
+    display:flex;
+    flex-direction:column;
+    gap:10px;
+    max-width:320px;">
+  </div>
+
+  <!-- Scripts -->
+  <script src="toast.js"></script>
+  <script src="auth.js"></script>
+  <script src="i18n.js"></script>
+  <script src="goals.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="dashboard.js"></script>
+</body>
+</html>

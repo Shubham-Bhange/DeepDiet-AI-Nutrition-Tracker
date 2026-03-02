@@ -1,0 +1,88 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>DeepDiet - Scan Food</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+  <div class="container">
+    <div class="nav">
+      <div class="brand"><div class="brand-badge">D</div>DeepDiet</div>
+
+      <div class="nav-right">
+        <a class="active" href="index.html" data-i18n="scan">Scan</a>
+        <a href="history.html" data-i18n="history">History</a>
+        <a href="dashboard.html" data-i18n="dashboard">Dashboard</a>
+        <a href="weekly.html">Weekly</a>
+        <a href="profile.html">Profile</a>
+
+        <select id="langSelect">
+          <option value="en">English</option>
+          <option value="hi">Hindi</option>
+          <option value="te">Telugu</option>
+        </select>
+
+        <span class="badge">User: <span id="userInfo">--</span></span>
+        <button class="btn secondary" id="logoutBtn" type="button" data-i18n="logout">Logout</button>
+      </div>
+    </div>
+
+    <div class="grid grid-2">
+      <div class="card">
+        <h1 class="h1" data-i18n="scanMeal">Scan your meal</h1>
+        <p class="p" data-i18n="uploadTip">
+          Upload a food image. DeepDiet will detect the dish and estimate nutrition automatically.
+        </p>
+
+        <div id="dropzone" class="dropzone" style="margin-top:16px;">
+          <p class="p"><b>Drag & Drop</b> your food image here</p>
+          <p class="p">or</p>
+          <input id="fileInput" type="file" accept="image/*" hidden />
+          <button id="browseBtn" class="btn secondary" data-i18n="browse">Browse Image</button>
+          <img id="preview" class="preview" alt="preview"/>
+        </div>
+
+        <div style="display:flex;gap:10px;margin-top:16px;flex-wrap:wrap">
+          <button id="scanBtn" class="btn" type="button" disabled>Scan Now</button>
+          <button id="resetBtn" class="btn secondary" type="button" data-i18n="reset" disabled>Reset</button>
+        </div>
+
+        <div id="loader" class="loader">
+          <span class="spinner"></span>
+          <b>Analyzing…</b> Please wait.
+        </div>
+
+        <div style="margin-top:14px">
+          <span class="badge">AI Dish-level Nutrition</span>
+          <span class="badge">Portion estimation</span>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2 style="margin:0 0 8px">Tips for best results</h2>
+        <ul class="p">
+          <li>Capture meal clearly in good light.</li>
+          <li>Keep the full plate visible.</li>
+          <li>Avoid blur / shaking.</li>
+        </ul>
+        <div style="margin-top:12px">
+          <span class="badge">Supports restaurant meals</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="toastBox" style="
+    position:fixed; bottom:18px; right:18px; z-index:9999;
+    display:flex; flex-direction:column; gap:10px; max-width:320px;">
+  </div>
+
+  <script src="toast.js"></script>
+  <script src="auth.js"></script>
+  <script src="i18n.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

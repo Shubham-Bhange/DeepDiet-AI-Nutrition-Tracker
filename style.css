@@ -1,0 +1,146 @@
+:root{
+  --bg1:#0b1220;
+  --bg2:#111a2e;
+  --glass:rgba(255,255,255,0.10);
+  --stroke:rgba(255,255,255,0.18);
+  --text:#eaf0ff;
+  --muted:rgba(234,240,255,0.75);
+  --accent:#7c3aed;
+}
+
+*{box-sizing:border-box}
+body{
+  margin:0;
+  font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial;
+  color:var(--text);
+  background: radial-gradient(1200px 600px at 20% 10%, rgba(124,58,237,0.35), transparent 60%),
+              radial-gradient(900px 500px at 80% 0%, rgba(34,197,94,0.18), transparent 55%),
+              linear-gradient(180deg, var(--bg1), var(--bg2));
+  min-height:100vh;
+}
+
+.container{max-width:1100px;margin:0 auto;padding:24px}
+
+.nav{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:14px 18px;margin-bottom:22px;
+  background:var(--glass);
+  border:1px solid var(--stroke);
+  backdrop-filter: blur(18px);
+  border-radius:18px;
+  gap:14px;
+}
+
+.brand{display:flex;gap:10px;align-items:center;font-weight:700}
+.brand-badge{
+  width:36px;height:36px;border-radius:12px;
+  background:linear-gradient(135deg,var(--accent),#3b82f6);
+  display:grid;place-items:center;font-weight:900;
+}
+
+.nav-right{
+  display:flex;gap:12px;align-items:center;flex-wrap:wrap;
+}
+
+.nav a{
+  color:var(--muted);text-decoration:none;font-weight:700
+}
+.nav a.active{color:var(--text)}
+
+.grid{display:grid;gap:18px}
+.grid-2{grid-template-columns:1.2fr 0.8fr}
+@media(max-width:900px){.grid-2{grid-template-columns:1fr}}
+
+.card{
+  background:var(--glass);
+  border:1px solid var(--stroke);
+  border-radius:22px;
+  padding:18px;
+  backdrop-filter: blur(18px);
+  box-shadow: 0 14px 40px rgba(0,0,0,0.35);
+  transition: transform 0.18s ease, box-shadow 0.18s ease;
+}
+.card:hover{transform:translateY(-2px)}
+
+.h1{font-size:28px;margin:0 0 6px}
+.p{margin:0;color:var(--muted);line-height:1.6}
+
+.btn{
+  border:none;border-radius:14px;
+  padding:12px 16px;
+  color:white;font-weight:900;
+  cursor:pointer;
+  background:linear-gradient(135deg,var(--accent),#3b82f6);
+  transition: transform 0.12s ease, opacity 0.12s ease;
+}
+.btn.secondary{background:rgba(255,255,255,0.14);border:1px solid var(--stroke)}
+.btn:hover{transform:translateY(-1px)}
+.btn:active{transform:translateY(0)}
+.btn:disabled{opacity:0.55;cursor:not-allowed;transform:none!important}
+
+.badge{
+  display:inline-block;padding:6px 10px;border-radius:999px;
+  background:rgba(34,197,94,0.15);border:1px solid rgba(34,197,94,0.35);
+  color:#bbf7d0;font-weight:900;font-size:12px;
+}
+
+.dropzone{
+  border:1.5px dashed rgba(234,240,255,0.35);
+  background:rgba(255,255,255,0.08);
+  border-radius:22px;
+  padding:22px;
+  text-align:center;
+  transition:0.2s;
+}
+.dropzone.dragover{border-color:#93c5fd;background:rgba(147,197,253,0.14)}
+.preview{
+  width:100%;max-height:340px;object-fit:contain;margin-top:14px;border-radius:18px;
+  border:1px solid rgba(255,255,255,0.12);
+  display:none;
+}
+
+.kpi{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-top:14px}
+@media(max-width:900px){.kpi{grid-template-columns:repeat(2,1fr)}}
+.kpi .box{
+  padding:14px;border-radius:18px;background:rgba(255,255,255,0.10);
+  border:1px solid rgba(255,255,255,0.12);
+}
+.kpi .val{font-size:22px;font-weight:900}
+.kpi .lbl{color:var(--muted);font-weight:800;font-size:12px;margin-top:4px}
+
+.table{width:100%;border-collapse:collapse;margin-top:10px}
+.table th,.table td{padding:12px;border-bottom:1px solid rgba(255,255,255,0.12);text-align:left}
+.table th{color:rgba(234,240,255,0.9);font-size:12px;letter-spacing:0.6px;text-transform:uppercase}
+
+.loader{
+  display:none;
+  margin-top:14px;
+  padding:12px 14px;border-radius:16px;
+  background:rgba(255,255,255,0.10);
+  border:1px solid rgba(255,255,255,0.12);
+}
+.spinner{
+  width:16px;height:16px;border-radius:50%;
+  border:2px solid rgba(255,255,255,0.25);
+  border-top-color:white;
+  display:inline-block;margin-right:10px;
+  animation:spin 0.7s linear infinite;
+}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+.input{
+  width:100%;
+  margin-top:6px;
+  padding:12px 14px;
+  border-radius:14px;
+  border:1px solid rgba(255,255,255,0.16);
+  background:rgba(255,255,255,0.08);
+  color:white;
+  outline:none;
+}
+select{
+  padding:10px 12px;border-radius:14px;
+  border:1px solid rgba(255,255,255,0.16);
+  background:rgba(255,255,255,0.08);
+  color:white;outline:none;
+}

@@ -1,0 +1,131 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>DeepDiet - Weekly Report</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="container">
+    <div class="nav">
+      <div class="brand"><div class="brand-badge">D</div>DeepDiet</div>
+
+      <div class="nav-right">
+        <a href="index.html">Scan</a>
+        <a href="history.html">History</a>
+        <a href="dashboard.html">Dashboard</a>
+        <a class="active" href="weekly.html">Weekly</a>
+        <a href="profile.html">Profile</a>
+
+        <select id="langSelect">
+          <option value="en">English</option>
+          <option value="hi">Hindi</option>
+          <option value="te">Telugu</option>
+        </select>
+
+        <span class="badge">User: <span id="userInfo">--</span></span>
+        <button class="btn secondary" id="logoutBtn" type="button">Logout</button>
+      </div>
+    </div>
+
+    <!-- SUMMARY CARD -->
+    <div class="card">
+      <h1 class="h1">Weekly Report (Last 7 Days)</h1>
+      <p class="p">Summary, trends, goal report and suggestions.</p>
+
+      <div class="kpi">
+        <div class="box"><div class="val" id="wkCal">--</div><div class="lbl">Total Calories</div></div>
+        <div class="box"><div class="val" id="wkAvg">--</div><div class="lbl">Avg/day Calories</div></div>
+        <div class="box"><div class="val" id="wkScore">--</div><div class="lbl">Avg Health Score</div></div>
+        <div class="box"><div class="val" id="wkScans">--</div><div class="lbl">Scans Count</div></div>
+      </div>
+
+      <div style="margin-top:14px;display:flex;gap:10px;flex-wrap:wrap;">
+        <span class="badge" id="compareBadge">Comparison: --</span>
+        <button class="btn secondary" id="weeklyPdfBtn" type="button">Export Weekly PDF</button>
+      </div>
+    </div>
+
+    <!-- CHARTS -->
+    <div class="grid grid-2" style="margin-top:18px;">
+      <div class="card">
+        <h2 style="margin:0 0 10px;">Daily Calories (7 days)</h2>
+        <canvas id="wkCalChart"></canvas>
+      </div>
+      <div class="card">
+        <h2 style="margin:0 0 10px;">Daily Health Score (7 days)</h2>
+        <canvas id="wkScoreChart"></canvas>
+      </div>
+    </div>
+
+    <!-- GOAL + MACROS -->
+    <div class="grid grid-2" style="margin-top:18px;">
+      <div class="card">
+        <h2 style="margin:0 0 10px;">Goal Achievement</h2>
+        <p class="p">How many days you stayed within your calorie goal.</p>
+
+        <div class="kpi" style="margin-top:12px;">
+          <div class="box"><div class="val" id="daysMet">--</div><div class="lbl">Days Met Goal</div></div>
+          <div class="box"><div class="val" id="daysOver">--</div><div class="lbl">Days Exceeded</div></div>
+          <div class="box"><div class="val" id="avgRemain">--</div><div class="lbl">Avg Remaining</div></div>
+          <div class="box"><div class="val" id="avgExcess">--</div><div class="lbl">Avg Excess</div></div>
+        </div>
+
+        <div style="margin-top:12px;">
+          <span class="badge" id="goalSummaryBadge">--</span>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2 style="margin:0 0 10px;">Weekly Macros</h2>
+        <p class="p">Total macros from last 7 days.</p>
+        <canvas id="macroChart"></canvas>
+      </div>
+    </div>
+
+    <!-- SMART SUGGESTIONS -->
+    <div class="card" style="margin-top:18px;">
+      <h2 style="margin:0 0 10px;">Smart Suggestions</h2>
+      <ul class="p" id="suggestionsList" style="margin:0;padding-left:18px;"></ul>
+    </div>
+
+    <!-- BEST/WORST + TOP FOODS -->
+    <div class="grid grid-2" style="margin-top:18px;">
+      <div class="card">
+        <h2 style="margin:0 0 10px;">Best & Worst Meal</h2>
+        <div style="display:grid;gap:12px;">
+          <div style="padding:12px;border-radius:18px;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.12);">
+            <b>Best Meal:</b>
+            <div class="p" id="bestMeal">--</div>
+          </div>
+          <div style="padding:12px;border-radius:18px;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.12);">
+            <b>Worst Meal:</b>
+            <div class="p" id="worstMeal">--</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2 style="margin:0 0 10px;">Top Foods This Week</h2>
+        <table class="table">
+          <thead>
+            <tr><th>Food</th><th>Count</th></tr>
+          </thead>
+          <tbody id="topFoodsTable"></tbody>
+        </table>
+      </div>
+    </div>
+
+  </div>
+
+  <div id="toastBox" style="position:fixed; bottom:18px; right:18px; z-index:9999; display:flex; flex-direction:column; gap:10px; max-width:320px;"></div>
+
+  <script src="toast.js"></script>
+  <script src="auth.js"></script>
+  <script src="i18n.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="weekly.js"></script>
+</body>
+</html>
