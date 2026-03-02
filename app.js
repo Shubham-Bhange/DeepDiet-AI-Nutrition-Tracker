@@ -89,7 +89,7 @@ async function geminiDishScan(file) {
   const form = new FormData();
   form.append("file", file);
 
-  const res = await fetch("http://127.0.0.1:8000/api/dish-scan", {
+  const res = await fetch("https://deepdiet-backend.onrender.com/api/dish-scan", {
     method: "POST",
     body: form
   });
