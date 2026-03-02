@@ -1,13 +1,50 @@
 <script src="toast.js"></script>
-<script src="auth.js"></script>
+
 <script>
-  document.getElementById("registerBtn").addEventListener("click", () => {
-    const fullName = document.getElementById("fullName").value.trim();
-    const userId = document.getElementById("userId").value.trim();
-    const password = document.getElementById("password").value;
-    const res = registerUser({ userId, password, fullName });
-    if (!res.ok) return showToast(res.msg, "error");
-    showToast(res.msg, "success");
-    setTimeout(() => window.location.href = "login.html", 800);
-  });
+const API_BASE = "https://deepdiet-backend.onrender.com";
+
+document.getElementById("registerBtn").addEventListener("click", async () => {
+
+  const fullName = document.getElementById("fullName").value.trim();
+  const userId = document.getElementById("userId").value.trim();
+  const password = document.getElementById("password").value;
+
+  if (!fullName || !userId || !password) {
+    showToast("Please fill all fields", "error");
+    return;
+  }
+
+  try {
+
+    const res = await fetch(`${API_BASE}/api/register`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        fullName,
+        userId,
+        password
+      })
+    });
+
+    const data = await res.json();
+
+    if (!data.ok) {
+      showToast(data.msg || "Registration failed", "error");
+      return;
+    }
+
+    showToast("Registered successfully ✅", "success");
+
+    setTimeout(() => {
+      window.location.href = "login.html";
+    }, 800);
+
+  } catch (err) {
+    console.error(err);
+    showToast("Server error. Try again.", "error");
+  }
+
+});
 </script>
