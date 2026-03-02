@@ -9,7 +9,9 @@
 <body>
   <div class="container">
     <div class="nav">
-      <div class="brand"><div class="brand-badge">D</div>DeepDiet</div>
+      <div class="brand">
+        <div class="brand-badge">D</div>DeepDiet
+      </div>
       <div class="nav-right">
         <a class="active" href="login.html">Login</a>
         <a href="register.html">Register</a>
@@ -32,7 +34,10 @@
         </div>
 
         <button id="loginBtn" class="btn" type="button">Login</button>
-        <p class="p" style="margin:0;">New user? <a href="register.html" style="color:#bfdbfe;">Create account</a></p>
+        <p class="p" style="margin:0;">
+          New user? 
+          <a href="register.html" style="color:#bfdbfe;">Create account</a>
+        </p>
       </div>
     </div>
 
@@ -40,15 +45,49 @@
   </div>
 
   <script src="toast.js"></script>
-  <script src="auth.js"></script>
+
   <script>
-    document.getElementById("loginBtn").addEventListener("click", () => {
+    const API_BASE = "https://deepdiet-backend.onrender.com";
+
+    document.getElementById("loginBtn").addEventListener("click", async () => {
       const userId = document.getElementById("userId").value.trim();
       const password = document.getElementById("password").value;
-      const res = loginUser({ userId, password });
-      if (!res.ok) return showToast(res.msg, "error");
-      showToast(res.msg, "success");
-      setTimeout(() => window.location.href = "index.html", 700);
+
+      if (!userId || !password) {
+        showToast("Enter User ID and Password", "error");
+        return;
+      }
+
+      try {
+        const res = await fetch(`${API_BASE}/api/login`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({ userId, password })
+        });
+
+        const data = await res.json();
+
+        if (!data.ok) {
+          showToast(data.msg || "Login failed", "error");
+          return;
+        }
+
+        // ✅ Store token
+        localStorage.setItem("token", data.token);
+        localStorage.setItem("fullName", data.fullName);
+
+        showToast("Login successful ✅", "success");
+
+        setTimeout(() => {
+          window.location.href = "index.html";
+        }, 700);
+
+      } catch (err) {
+        console.error(err);
+        showToast("Login error. Try again.", "error");
+      }
     });
   </script>
 </body>
