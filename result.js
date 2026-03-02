@@ -1,44 +1,35 @@
 // ======================================================
 // DeepDiet - Result Page Logic
-// Includes:
-// - Auth
-// - Dish slider
-// - PDF export
-// - Backend AI Chatbot (Gemini)
 // ======================================================
 
 requireAuth();
 renderUserInfo();
 applyI18n();
 
-// Language selector
+// ================= LANGUAGE =================
 const langSelect = document.getElementById("langSelect");
 if (langSelect) {
   langSelect.value = getLang();
   langSelect.addEventListener("change", () => setLang(langSelect.value));
 }
 
-// Logout
+// ================= LOGOUT =================
 const logoutBtn = document.getElementById("logoutBtn");
 if (logoutBtn) {
   logoutBtn.addEventListener("click", () => {
     logoutUser();
     showToast("Logged out", "info");
-    setTimeout(() => window.location.href = "login.html", 700);
+    setTimeout(() => window.location.href = "login.html", 600);
   });
 }
 
-// ======================================================
-// LOAD CURRENT SCAN
-// ======================================================
-
+// ================= LOAD SCAN =================
 const HISTORY_KEY = userKey("deepdiet_history");
 const CURRENT_KEY = userKey("deepdiet_current_scan");
 
 const history = JSON.parse(localStorage.getItem(HISTORY_KEY) || "[]");
 const scanId = localStorage.getItem(CURRENT_KEY);
 
-// IMPORTANT: let (not const)
 let scan = history.find(s => String(s.id) === String(scanId));
 
 function updateTotalsUI(totals) {
@@ -63,10 +54,7 @@ if (!scan) {
 
   updateTotalsUI(scan.totals);
 
-  // ======================================================
-  // DISH MODE
-  // ======================================================
-
+  // ================= DISH MODE =================
   if (scan.dish_level) {
 
     document.getElementById("dishPanel").style.display = "block";
@@ -114,10 +102,7 @@ if (!scan) {
     });
   }
 
-  // ======================================================
-  // ITEMS TABLE
-  // ======================================================
-
+  // ================= ITEMS TABLE =================
   const tbody = document.getElementById("itemsTable");
   tbody.innerHTML = "";
 
@@ -127,26 +112,17 @@ if (!scan) {
   } else {
     scan.items.forEach(it => {
       const tr = document.createElement("tr");
-      const qty = it.portion_text ||
-        (it.quantity_value
-          ? `${it.quantity_value} ${it.quantity_unit}`
-          : "-");
-
       tr.innerHTML = `
         <td>${it.name}</td>
-        <td>${qty}</td>
+        <td>${it.portion_text || "-"}</td>
         <td>${it.calories || 0}</td>
       `;
-
       tbody.appendChild(tr);
     });
   }
 }
 
-// ======================================================
-// PDF EXPORT
-// ======================================================
-
+// ================= PDF EXPORT =================
 document.getElementById("downloadBtn")
   .addEventListener("click", () => {
 
@@ -159,33 +135,22 @@ document.getElementById("downloadBtn")
   pdf.setFontSize(11);
   pdf.text(`Meal: ${scan?.meal_name || "--"}`, 14, 30);
 
-  if (scan?.dish_level) {
-    pdf.text(`Dish mode: Restaurant`, 14, 38);
-    pdf.text(`Estimated grams: ${scan.dish_meta?.estimated_grams || "--"}`, 14, 46);
-    pdf.text(`Portion: ${scan.dish_meta?.portion_label || "--"}`, 14, 54);
-  }
-
-  pdf.text(`Calories: ${scan?.totals?.calories ?? 0}`, 14, 70);
-  pdf.text(`Protein: ${scan?.totals?.protein_g ?? 0} g`, 14, 78);
-  pdf.text(`Carbs: ${scan?.totals?.carbs_g ?? 0} g`, 14, 86);
-  pdf.text(`Fat: ${scan?.totals?.fat_g ?? 0} g`, 14, 94);
+  pdf.text(`Calories: ${scan?.totals?.calories ?? 0}`, 14, 42);
+  pdf.text(`Protein: ${scan?.totals?.protein_g ?? 0} g`, 14, 50);
+  pdf.text(`Carbs: ${scan?.totals?.carbs_g ?? 0} g`, 14, 58);
+  pdf.text(`Fat: ${scan?.totals?.fat_g ?? 0} g`, 14, 66);
 
   pdf.save("deepdiet-report.pdf");
   showToast("PDF downloaded ✅", "success");
 });
 
-
-// ======================================================
-// 🤖 GEMINI BACKEND CHATBOT
-// ======================================================
-
+// ================= CHATBOT =================
 const toggle = document.getElementById("chatbotToggle");
 const chatBox = document.getElementById("chatbotBox");
 const chatMessages = document.getElementById("chatMessages");
 const chatInput = document.getElementById("chatInput");
 const chatSend = document.getElementById("chatSend");
 
-// Toggle chatbot
 if (toggle) {
   toggle.addEventListener("click", () => {
     chatBox.style.display =
@@ -193,7 +158,6 @@ if (toggle) {
   });
 }
 
-// Add message bubble
 function addChatMessage(text, type = "bot") {
   const div = document.createElement("div");
   div.style.marginBottom = "8px";
@@ -204,13 +168,11 @@ function addChatMessage(text, type = "bot") {
     type === "user"
       ? "rgba(59,130,246,0.2)"
       : "rgba(34,197,94,0.2)";
-
   div.textContent = text;
   chatMessages.appendChild(div);
   chatMessages.scrollTop = chatMessages.scrollHeight;
 }
 
-// Send to backend
 async function sendChatMessage() {
 
   const message = chatInput.value.trim();
@@ -219,11 +181,14 @@ async function sendChatMessage() {
   addChatMessage(message, "user");
   chatInput.value = "";
 
+  const token = localStorage.getItem("token");
+
   try {
     const res = await fetch("https://deepdiet-backend.onrender.com/api/chat", {
       method: "POST",
       headers: {
-        "Content-Type": "application/json"
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${token}`
       },
       body: JSON.stringify({
         message: message,
@@ -236,7 +201,7 @@ async function sendChatMessage() {
 
   } catch (err) {
     console.error(err);
-    addChatMessage("Server error. Is backend running?", "bot");
+    addChatMessage("Server error.", "bot");
   }
 }
 

@@ -1,20 +1,36 @@
-// ================= AUTH CHECK =================
+// ======================================================
+// DeepDiet - Scan Page Logic
+// ======================================================
+
+requireAuth();
+renderUserInfo();
+applyI18n();
+
+// ================= LANGUAGE =================
+const langSelect = document.getElementById("langSelect");
+if (langSelect) {
+  langSelect.value = getLang();
+  langSelect.addEventListener("change", () => setLang(langSelect.value));
+}
+
+// ================= LOGOUT =================
+const logoutBtn = document.getElementById("logoutBtn");
+if (logoutBtn) {
+  logoutBtn.addEventListener("click", () => {
+    logoutUser();
+    showToast("Logged out", "info");
+    setTimeout(() => window.location.href = "login.html", 600);
+  });
+}
+
+// ================= API =================
 const API_BASE = "https://deepdiet-backend.onrender.com";
 
 function getToken() {
   return localStorage.getItem("token");
 }
 
-function requireAuth() {
-  const token = getToken();
-  if (!token) {
-    window.location.href = "login.html";
-  }
-}
-
-requireAuth();
-
-// ================= UI =================
+// ================= UI ELEMENTS =================
 const dz = document.getElementById("dropzone");
 const fileInput = document.getElementById("fileInput");
 const browseBtn = document.getElementById("browseBtn");
@@ -30,7 +46,7 @@ function setFile(file) {
   if (!file) return;
 
   if (!file.type.startsWith("image/")) {
-    alert("Please upload an image file.");
+    showToast("Please upload an image file.", "error");
     return;
   }
 
@@ -49,7 +65,9 @@ dz.addEventListener("dragover", (e) => {
   e.preventDefault();
   dz.classList.add("dragover");
 });
+
 dz.addEventListener("dragleave", () => dz.classList.remove("dragover"));
+
 dz.addEventListener("drop", (e) => {
   e.preventDefault();
   dz.classList.remove("dragover");
@@ -68,10 +86,10 @@ resetBtn.addEventListener("click", () => {
 
 // ================= GEMINI SCAN =================
 async function geminiDishScan(file) {
-  const token = getToken();
 
+  const token = getToken();
   if (!token) {
-    alert("Session expired. Please login again.");
+    showToast("Session expired. Please login again.", "error");
     window.location.href = "login.html";
     return;
   }
@@ -88,8 +106,8 @@ async function geminiDishScan(file) {
   });
 
   if (res.status === 401) {
-    alert("Session expired. Please login again.");
     localStorage.removeItem("token");
+    showToast("Session expired. Please login again.", "error");
     window.location.href = "login.html";
     return;
   }
@@ -104,8 +122,9 @@ async function geminiDishScan(file) {
 
 // ================= SCAN BUTTON =================
 scanBtn.addEventListener("click", async () => {
+
   if (!currentFile) {
-    alert("Upload image first");
+    showToast("Upload image first", "error");
     return;
   }
 
@@ -113,16 +132,27 @@ scanBtn.addEventListener("click", async () => {
   scanBtn.disabled = true;
 
   try {
+
     const dish = await geminiDishScan(currentFile);
 
-    // Save current scan in localStorage ONLY for result page display
-    localStorage.setItem("deepdiet_current_scan", JSON.stringify(dish));
+    // Save in localStorage (user-based)
+    const HISTORY_KEY = userKey("deepdiet_history");
+    const history = JSON.parse(localStorage.getItem(HISTORY_KEY) || "[]");
 
-    window.location.href = "result.html";
+    history.unshift(dish);
+
+    localStorage.setItem(HISTORY_KEY, JSON.stringify(history));
+    localStorage.setItem(userKey("deepdiet_current_scan"), dish.id);
+
+    showToast("Scan successful ✅", "success");
+
+    setTimeout(() => {
+      window.location.href = "result.html";
+    }, 500);
 
   } catch (err) {
     console.error(err);
-    alert("Scan failed. Please try again.");
+    showToast("Scan failed. Try again.", "error");
   } finally {
     loader.style.display = "none";
     scanBtn.disabled = false;

@@ -1,3 +1,7 @@
+# =====================================================
+# DeepDiet Backend - FastAPI + Gemini + MongoDB
+# =====================================================
+
 from fastapi import FastAPI, UploadFile, File, Depends, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
@@ -35,7 +39,7 @@ app = FastAPI()
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=["*"],  # restrict in production
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -68,16 +72,21 @@ ACCESS_TOKEN_EXPIRE_DAYS = 7
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 security = HTTPBearer()
 
+
 def hash_password(password: str):
     return pwd_context.hash(password)
+
 
 def verify_password(plain, hashed):
     return pwd_context.verify(plain, hashed)
 
+
 def create_access_token(data: dict):
     expire = datetime.utcnow() + timedelta(days=ACCESS_TOKEN_EXPIRE_DAYS)
-    data.update({"exp": expire})
-    return jwt.encode(data, JWT_SECRET, algorithm=ALGORITHM)
+    to_encode = data.copy()
+    to_encode.update({"exp": expire})
+    return jwt.encode(to_encode, JWT_SECRET, algorithm=ALGORITHM)
+
 
 def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(security)):
     try:
@@ -88,6 +97,7 @@ def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(securit
         return user_id
     except JWTError:
         raise HTTPException(status_code=401, detail="Invalid token")
+
 
 # =====================================================
 # HELPER FUNCTIONS
@@ -106,11 +116,13 @@ def extract_json(text: str):
     except:
         return None
 
+
 def f(x, d=0.0):
     try:
         return float(x)
     except:
         return d
+
 
 # =====================================================
 # AUTH ENDPOINTS
@@ -120,6 +132,7 @@ class RegisterRequest(BaseModel):
     userId: str
     password: str
     fullName: str
+
 
 @app.post("/api/register")
 def register(req: RegisterRequest):
@@ -135,13 +148,16 @@ def register(req: RegisterRequest):
 
     return {"ok": True, "msg": "Registered successfully"}
 
+
 class LoginRequest(BaseModel):
     userId: str
     password: str
 
+
 @app.post("/api/login")
 def login(req: LoginRequest):
     user = users_collection.find_one({"userId": req.userId})
+
     if not user or not verify_password(req.password, user["password"]):
         return {"ok": False, "msg": "Invalid credentials"}
 
@@ -153,8 +169,9 @@ def login(req: LoginRequest):
         "fullName": user.get("fullName", "")
     }
 
+
 # =====================================================
-# DISH SCAN ENDPOINT (WITH AUTO SAVE)
+# DISH SCAN ENDPOINT
 # =====================================================
 
 @app.post("/api/dish-scan")
@@ -169,7 +186,13 @@ Return STRICT JSON:
   "dish_name": "string",
   "portion_label": "small|medium|large",
   "estimated_grams": number,
-  "items": [],
+  "items": [
+    {
+      "name": "string",
+      "portion_text": "string",
+      "calories": number
+    }
+  ],
   "nutrition": {
     "calories": number,
     "protein_g": number,
@@ -190,25 +213,45 @@ Return STRICT JSON:
         )
 
         data = extract_json(response.text)
+
         if not data:
-            raise ValueError("Gemini parsing failed")
+            raise ValueError("Gemini JSON parsing failed")
 
-        # Normalize
-        data.setdefault("dish_name", "Unknown Dish")
-        data.setdefault("portion_label", "medium")
-        data.setdefault("estimated_grams", 300)
-        data.setdefault("confidence", 0)
-        data.setdefault("notes", "")
+        # Build frontend-compatible structure
+        scan_doc = {
+            "id": str(datetime.utcnow().timestamp()).replace(".", ""),
+            "userId": user_id,
+            "meal_name": data.get("dish_name", "Unknown Dish"),
+            "dish_level": True,
+            "dish_meta": {
+                "portion_label": data.get("portion_label", "medium"),
+                "estimated_grams": data.get("estimated_grams", 300),
+                "confidence": data.get("confidence", 0),
+                "notes": data.get("notes", "")
+            },
+            "items": data.get("items", []),
+            "totals": {
+                "calories": f(data["nutrition"].get("calories")),
+                "protein_g": f(data["nutrition"].get("protein_g")),
+                "carbs_g": f(data["nutrition"].get("carbs_g")),
+                "fat_g": f(data["nutrition"].get("fat_g"))
+            },
+            "health_score": min(
+                100,
+                max(0, int(100 - f(data["nutrition"].get("sugar_g", 0)) / 2))
+            ),
+            "timestamp": datetime.utcnow()
+        }
 
-        data["timestamp"] = datetime.utcnow()
-        data["userId"] = user_id
+        scans_collection.insert_one(scan_doc)
 
-        scans_collection.insert_one(data)
+        scan_doc["timestamp"] = scan_doc["timestamp"].isoformat()
 
-        return data
+        return scan_doc
 
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
 
 # =====================================================
 # GET HISTORY
@@ -217,10 +260,18 @@ Return STRICT JSON:
 @app.get("/api/history")
 def get_history(user_id: str = Depends(get_current_user)):
     scans = list(
-        scans_collection.find({"userId": user_id}, {"_id": 0})
-        .sort("timestamp", -1)
+        scans_collection.find(
+            {"userId": user_id},
+            {"_id": 0}
+        ).sort("timestamp", -1)
     )
+
+    for s in scans:
+        if isinstance(s.get("timestamp"), datetime):
+            s["timestamp"] = s["timestamp"].isoformat()
+
     return scans
+
 
 # =====================================================
 # PROFILE ENDPOINTS
@@ -236,10 +287,15 @@ def save_profile(profile: dict, user_id: str = Depends(get_current_user)):
     )
     return {"ok": True}
 
+
 @app.get("/api/profile")
 def get_profile(user_id: str = Depends(get_current_user)):
-    profile = profiles_collection.find_one({"userId": user_id}, {"_id": 0})
+    profile = profiles_collection.find_one(
+        {"userId": user_id},
+        {"_id": 0}
+    )
     return profile or {}
+
 
 # =====================================================
 # CHATBOT ENDPOINT
@@ -249,10 +305,12 @@ class ChatRequest(BaseModel):
     message: str
     context: dict | None = None
 
+
 @app.post("/api/chat")
 def chat_with_ai(req: ChatRequest, user_id: str = Depends(get_current_user)):
+
     prompt = f"""
-You are DeepDiet AI.
+You are DeepDiet AI assistant.
 User question: {req.message}
 Meal context: {json.dumps(req.context)}
 Reply in simple short friendly English.
@@ -264,6 +322,11 @@ Reply in simple short friendly English.
     )
 
     return {"reply": response.text.strip()}
+
+
+# =====================================================
+# ROOT CHECK
+# =====================================================
 
 @app.get("/")
 def root():
