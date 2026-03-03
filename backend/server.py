@@ -185,22 +185,36 @@ async def dish_scan(
         image = Image.open(io.BytesIO(img_bytes)).convert("RGB")
 
         prompt = """
-You are a food nutrition AI.
+You are DeepDiet AI — a professional Indian food nutrition analyst.
 
-Return STRICT JSON only:
+Analyze the uploaded food image carefully.
+
+You MUST:
+- Identify Indian dishes accurately (North, South, Street food, Sweets, Restaurant meals, Home meals).
+- Detect multiple items if present (example: roti + dal + sabzi + rice).
+- Estimate realistic Indian portion sizes.
+- Provide accurate calorie and macro estimates based on common Indian cooking methods.
+
+Return STRICT JSON only.
+Do NOT include explanation text.
+Do NOT include markdown.
+Do NOT include comments.
+
+Output format:
+
 {
   "meal_name": "string",
-  "dish_level": true,
+  "dish_level": true or false,
   "dish_meta": {
     "portion_label": "small | medium | large",
     "estimated_grams": number,
-    "confidence": number,
-    "notes": "short explanation"
+    "confidence": number (0-100),
+    "notes": "short explanation of assumptions"
   },
   "items": [
     {
       "name": "string",
-      "portion_text": "e.g. 2 rotis",
+      "portion_text": "e.g. 2 rotis | 1 bowl dal | 1 plate biryani",
       "calories": number
     }
   ],
@@ -210,9 +224,34 @@ Return STRICT JSON only:
     "carbs_g": number,
     "fat_g": number
   },
-  "health_score": number
+  "health_score": number (0-100)
 }
-No extra text.
+
+Rules:
+
+1. If full restaurant-style dish (biryani, fried rice, pizza, thali, etc.), set dish_level = true.
+2. If clearly separate homemade items, set dish_level = false.
+3. Use typical Indian portion standards:
+   - 1 roti ≈ 100 kcal
+   - 1 bowl dal ≈ 180–220 kcal
+   - 1 cup rice ≈ 200 kcal
+   - 1 samosa ≈ 250 kcal
+   - 1 plate biryani ≈ 700–900 kcal
+   - 1 dosa ≈ 300–400 kcal
+4. Estimate oil usage realistically (Indian cooking often includes visible oil).
+5. Avoid extreme numbers.
+6. Health score guidelines:
+   - 80–100: balanced, low oil, high protein
+   - 60–79: moderate
+   - 40–59: high carb or oil
+   - 0–39: fried / sugary / high fat
+
+If unsure:
+- Make best reasonable assumption.
+- Never return empty fields.
+- Never return null.
+
+Return JSON only.
 """
 
         response = client.models.generate_content(

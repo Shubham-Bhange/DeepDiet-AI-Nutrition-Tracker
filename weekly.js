@@ -25,8 +25,9 @@ if (logoutBtn) {
 
 // ================= GOAL =================
 const GOAL_KEY = "deepdiet_goal";
-const goal = Number(localStorage.getItem(GOAL_KEY) || 0);
-
+function getGoal() {
+  return Number(localStorage.getItem("deepdiet_goal") || 0);
+}
 let history = [];
 
 document.addEventListener("DOMContentLoaded", loadWeekly);
@@ -54,6 +55,7 @@ async function loadWeekly() {
 
 function renderWeekly(history) {
 
+  const goal = getGoal();
   const now = new Date();
   const last7Start = new Date();
   last7Start.setDate(now.getDate() - 6);
