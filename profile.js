@@ -18,8 +18,8 @@ if (logoutBtn) {
   });
 }
 
-const PROFILE_KEY = userKey("deepdiet_profile");
-const GOAL_KEY = userKey("deepdiet_goal");
+const PROFILE_KEY = "deepdiet_profile";
+const GOAL_KEY = "deepdiet_goal";
 
 function loadProfile() {
   return JSON.parse(localStorage.getItem(PROFILE_KEY) || "null");
