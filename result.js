@@ -1,216 +1,79 @@
 // ======================================================
-// DeepDiet - Result Page Logic
+// DeepDiet - Result Page (Backend Based)
 // ======================================================
 
 requireAuth();
 renderUserInfo();
 applyI18n();
 
-// ================= LANGUAGE =================
-const langSelect = document.getElementById("langSelect");
-if (langSelect) {
-  langSelect.value = getLang();
-  langSelect.addEventListener("change", () => setLang(langSelect.value));
+const API = API_BASE;
+const token = localStorage.getItem("token");
+
+const currentScanId = localStorage.getItem("deepdiet_current_scan");
+
+if (!currentScanId) {
+  showToast("No scan found.", "error");
+  setTimeout(() => window.location.href = "index.html", 800);
 }
 
-// ================= LOGOUT =================
-const logoutBtn = document.getElementById("logoutBtn");
-if (logoutBtn) {
-  logoutBtn.addEventListener("click", () => {
-    logoutUser();
-    showToast("Logged out", "info");
-    setTimeout(() => window.location.href = "login.html", 600);
-  });
-}
-
-// ================= LOAD SCAN =================
-const HISTORY_KEY = userKey("deepdiet_history");
-const CURRENT_KEY = userKey("deepdiet_current_scan");
-
-const history = JSON.parse(localStorage.getItem(HISTORY_KEY) || "[]");
-const scanId = localStorage.getItem(CURRENT_KEY);
-
-let scan = history.find(s => String(s.id) === String(scanId));
-
-function updateTotalsUI(totals) {
-  document.getElementById("calories").textContent = totals?.calories ?? "--";
-  document.getElementById("protein").textContent = totals?.protein_g ?? "--";
-  document.getElementById("carbs").textContent = totals?.carbs_g ?? "--";
-  document.getElementById("fat").textContent = totals?.fat_g ?? "--";
-}
-
-function saveScan(updatedScan) {
-  const hist = JSON.parse(localStorage.getItem(HISTORY_KEY) || "[]");
-  const pos = hist.findIndex(s => String(s.id) === String(updatedScan.id));
-  if (pos >= 0) {
-    hist[pos] = updatedScan;
-    localStorage.setItem(HISTORY_KEY, JSON.stringify(hist));
-  }
-}
-
-if (!scan) {
-  showToast("No scan found", "error");
-} else {
-
-  updateTotalsUI(scan.totals);
-
-  // ================= DISH MODE =================
-  if (scan.dish_level) {
-
-    document.getElementById("dishPanel").style.display = "block";
-
-    const gramsBase = Number(scan.dish_meta?.estimated_grams || 300);
-    const confidence = Number(scan.dish_meta?.confidence || 0);
-
-    document.getElementById("dishNameBadge").textContent =
-      `Dish: ${scan.meal_name}`;
-
-    document.getElementById("portionBadge").textContent =
-      `Portion: ${scan.dish_meta?.portion_label || "--"}`;
-
-    document.getElementById("gramsBadge").textContent =
-      `Estimated: ${gramsBase} g`;
-
-    document.getElementById("confidenceBadge").textContent =
-      `Confidence: ${confidence}%`;
-
-    document.getElementById("dishNotes").textContent =
-      scan.dish_meta?.notes ? `Notes: ${scan.dish_meta.notes}` : "";
-
-    const baseTotals = { ...scan.totals };
-
-    const slider = document.getElementById("portionSlider");
-    const sliderText = document.getElementById("sliderText");
-
-    slider.addEventListener("input", () => {
-
-      const mult = Number(slider.value);
-      sliderText.textContent = `Multiplier: ${mult}x`;
-
-      document.getElementById("gramsBadge").textContent =
-        `Estimated: ${Math.round(gramsBase * mult)} g`;
-
-      scan.totals = {
-        calories: Math.round((baseTotals.calories || 0) * mult),
-        protein_g: Math.round((baseTotals.protein_g || 0) * mult * 10) / 10,
-        carbs_g: Math.round((baseTotals.carbs_g || 0) * mult * 10) / 10,
-        fat_g: Math.round((baseTotals.fat_g || 0) * mult * 10) / 10
-      };
-
-      updateTotalsUI(scan.totals);
-      saveScan(scan);
-    });
-  }
-
-  // ================= ITEMS TABLE =================
-  const tbody = document.getElementById("itemsTable");
-  tbody.innerHTML = "";
-
-  if (!scan.items || scan.items.length === 0) {
-    tbody.innerHTML =
-      `<tr><td colspan="3">Dish-level scan. No individual items.</td></tr>`;
-  } else {
-    scan.items.forEach(it => {
-      const tr = document.createElement("tr");
-      tr.innerHTML = `
-        <td>${it.name}</td>
-        <td>${it.portion_text || "-"}</td>
-        <td>${it.calories || 0}</td>
-      `;
-      tbody.appendChild(tr);
-    });
-  }
-}
-
-// ================= PDF EXPORT =================
-document.getElementById("downloadBtn")
-  .addEventListener("click", () => {
-
-  const { jsPDF } = window.jspdf;
-  const pdf = new jsPDF();
-
-  pdf.setFontSize(16);
-  pdf.text("DeepDiet Scan Report", 14, 18);
-
-  pdf.setFontSize(11);
-  pdf.text(`Meal: ${scan?.meal_name || "--"}`, 14, 30);
-
-  pdf.text(`Calories: ${scan?.totals?.calories ?? 0}`, 14, 42);
-  pdf.text(`Protein: ${scan?.totals?.protein_g ?? 0} g`, 14, 50);
-  pdf.text(`Carbs: ${scan?.totals?.carbs_g ?? 0} g`, 14, 58);
-  pdf.text(`Fat: ${scan?.totals?.fat_g ?? 0} g`, 14, 66);
-
-  pdf.save("deepdiet-report.pdf");
-  showToast("PDF downloaded ✅", "success");
-});
-
-// ================= CHATBOT =================
-const toggle = document.getElementById("chatbotToggle");
-const chatBox = document.getElementById("chatbotBox");
-const chatMessages = document.getElementById("chatMessages");
-const chatInput = document.getElementById("chatInput");
-const chatSend = document.getElementById("chatSend");
-
-if (toggle) {
-  toggle.addEventListener("click", () => {
-    chatBox.style.display =
-      chatBox.style.display === "flex" ? "none" : "flex";
-  });
-}
-
-function addChatMessage(text, type = "bot") {
-  const div = document.createElement("div");
-  div.style.marginBottom = "8px";
-  div.style.padding = "8px";
-  div.style.borderRadius = "12px";
-  div.style.fontSize = "13px";
-  div.style.background =
-    type === "user"
-      ? "rgba(59,130,246,0.2)"
-      : "rgba(34,197,94,0.2)";
-  div.textContent = text;
-  chatMessages.appendChild(div);
-  chatMessages.scrollTop = chatMessages.scrollHeight;
-}
-
-async function sendChatMessage() {
-
-  const message = chatInput.value.trim();
-  if (!message) return;
-
-  addChatMessage(message, "user");
-  chatInput.value = "";
-
-  const token = localStorage.getItem("token");
+async function loadResult() {
 
   try {
-    const res = await fetch("https://deepdiet-backend.onrender.com/api/chat", {
-      method: "POST",
+
+    const res = await fetch(`${API}/api/history`, {
       headers: {
-        "Content-Type": "application/json",
         "Authorization": `Bearer ${token}`
-      },
-      body: JSON.stringify({
-        message: message,
-        context: scan || {}
-      })
+      }
     });
 
-    const data = await res.json();
-    addChatMessage(data.reply || "No response", "bot");
+    if (!res.ok) throw new Error("Failed to load history");
+
+    const history = await res.json();
+
+    const scan = history.find(s => s.id === currentScanId);
+
+    if (!scan) {
+      showToast("Scan not found.", "error");
+      return;
+    }
+
+    renderResult(scan);
 
   } catch (err) {
     console.error(err);
-    addChatMessage("Server error.", "bot");
+    showToast("Failed to load result.", "error");
   }
 }
 
-if (chatSend) {
-  chatSend.addEventListener("click", sendChatMessage);
-}
+function renderResult(scan) {
 
-if (chatInput) {
-  chatInput.addEventListener("keypress", (e) => {
-    if (e.key === "Enter") sendChatMessage();
+  // Totals
+  document.getElementById("caloriesValue").textContent =
+    scan.totals?.calories || 0;
+
+  document.getElementById("proteinValue").textContent =
+    scan.totals?.protein_g || 0;
+
+  document.getElementById("carbsValue").textContent =
+    scan.totals?.carbs_g || 0;
+
+  document.getElementById("fatValue").textContent =
+    scan.totals?.fat_g || 0;
+
+  // Items table
+  const tbody = document.getElementById("itemsTableBody");
+  tbody.innerHTML = "";
+
+  (scan.items || []).forEach(item => {
+    const row = `
+      <tr>
+        <td>${item.name}</td>
+        <td>${item.portion_text}</td>
+        <td>${item.calories}</td>
+      </tr>
+    `;
+    tbody.innerHTML += row;
   });
 }
+
+loadResult();
