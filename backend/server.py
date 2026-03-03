@@ -41,7 +41,7 @@ app.add_middleware(
     allow_origins=[
         "https://deepdiet.vercel.app",
         "http://localhost:5500",
-        "http://127.0.0.1:5500"
+        "https://deepdiet-backend.onrender.com/"
     ],
     allow_credentials=True,
     allow_methods=["*"],
