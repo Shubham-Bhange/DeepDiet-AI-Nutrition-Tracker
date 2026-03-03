@@ -188,7 +188,6 @@ async def dish_scan(
 You are a food nutrition AI.
 
 Return STRICT JSON only:
-
 {
   "meal_name": "string",
   "dish_level": true,
@@ -213,12 +212,11 @@ Return STRICT JSON only:
   },
   "health_score": number
 }
-
 No extra text.
 """
 
         response = client.models.generate_content(
-            model="gemini-2.5-flash",
+            model="gemini-2.5-flash",  # safer model
             contents=[prompt, image]
         )
 
@@ -227,13 +225,21 @@ No extra text.
         if not data:
             raise ValueError("Gemini JSON parsing failed")
 
-        data["id"] = str(datetime.utcnow().timestamp())
-        data["timestamp"] = datetime.utcnow()
-        data["userId"] = user_id
+        # Prepare clean document
+        clean_doc = {
+            **data,
+            "id": str(datetime.utcnow().timestamp()),
+            "timestamp": datetime.utcnow().isoformat(),
+            "userId": user_id
+        }
 
-        scans_collection.insert_one(data)
+        # Insert into Mongo
+        result = scans_collection.insert_one(clean_doc)
 
-        return data
+        # Remove Mongo _id before returning
+        clean_doc["_id"] = str(result.inserted_id)
+
+        return clean_doc
 
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
